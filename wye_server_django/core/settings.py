@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'graphene_django',
+    'core',
     'account'
 ]
 
@@ -121,3 +123,7 @@ STATIC_URL = '/static/'
 
 # Using custom User model for authentication
 AUTH_USER_MODEL = 'account.WYEUser'
+
+GRAPHENE = {
+    'SCHEMA': 'core.gql_schema.schema'
+}

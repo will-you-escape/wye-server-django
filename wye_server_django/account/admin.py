@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from account.models import WYEUser
+
+
+class WYEUserAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(WYEUser, WYEUserAdmin)
