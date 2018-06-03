@@ -6,6 +6,8 @@ class WYEUserManager(BaseUserManager):
     def create_user(self, email, pseudo, password=None):
         if not email:
             raise ValueError('Email must be set!')
+        if not pseudo:
+            raise ValueError('Pseudo must be set!')
         user = self.model(email=email, pseudo=pseudo)
         user.set_password(password)
         user.save(using=self._db)
