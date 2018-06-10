@@ -15,5 +15,5 @@ before_script:
 - export DATABASE_SERVER_URL=sqlite:///db.sqlite3
 
 script:
-- cd wye-server-django
+- cd wye_server_django
 - ./manage.py test -v3
