@@ -1,0 +1,26 @@
+language: python
+python:
+- 3.5.2
+env:
+- DJANGO=2.0.6
+install:
+- pip install pipenv
+- pipenv install
+before_script:
+- export SECRET_KEY=dummy_secret_key
+- export DATABASE_SERVER_URL=sqlite:///db.sqlite3
+- export PRODUCTION_SERVER_URL='localhost'
+script:
+# Moving into project folder to have the test runner properly detect all tests.
+- cd wye_server_django
+- ./manage.py test -v3
+# Coming back to the app root, or the package archive sent to Heroku in the deploy section
+# won't contain the necessary Pipfile to have buildpack detect this python project.
+- cd $TRAVIS_BUILD_DIR
+deploy:
+  provider: heroku
+  app:
+    wye-server-django
+  api_key:
+    secure: A5XQ7l4msLxQ3T+Ux29DDbBp3Fkoz5X+9K8Rg7yA85B18TlGsvlQv+UMvFz3dGX1/4hi5hQoscSOAedRsk+CUBBRFGjCIjcz0VEAdYWO00XLQ2yBkxdwtzhn1Cl9t4MQceO3JDDoZ8+1HOcDOu+85X9UeUFE6heJz+73cWj2FjEK0/QaCoGk/A6VDzAFN5panzeKLQBzvHUBrM5H0tz47acFiuga2YCbL0HAnMtaVR6hOS9eIG2B2tkeOfFUn5zTq/pf9C8msmdar73itm1dRf1aoqLs40Tvamgl2ass/6JABK3OfUTdanCJHa7uV7rx0t2xsomP9fIK0bhtYb+ox3I/rb9fuGJLX5ALCKhwnpKyzpzEICMog3tPxsRDnfkx/9NsnwNkF1HnT9tk34Phf++6guSXG17LYhvWzzK25EQnASiYVWLScyN7mOdLgvvI+05CPSWlylR3u+m65+tqCgVwEMckv848dqzxSQ9yQB6/KUk3amXIIdz0yCHOjNHdPOWGd/9GrFXKlx/Tb384d9UW2lalO8REAs/UjBRBX3166PPHdkdwVwJhCrACWqbdMNF6qddQsEEMbFUhUdGb2/nafV2CGiuIciw9DTi+Ktx9vJj5KOlEgYgN2Z05LAcmcSIPUsBGBt62EnS4uINmcy9Hd/NV3GZTZUw4kwnrcUE=
+  on: master
