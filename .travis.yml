@@ -1,0 +1,19 @@
+language: python
+
+python:
+- "3.5.2"
+
+env:
+- DJANGO=2.0.6
+
+install:
+- pip install pipenv
+- pipenv install
+
+before_script:
+- export SECRET_KEY=dummy_secret_key
+- export DATABASE_SERVER_URL=sqlite:///db.sqlite3
+
+script:
+- cd wye-server-django
+- ./manage.py test -v3
