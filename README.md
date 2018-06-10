@@ -24,3 +24,34 @@ heroku ps:exec
 ```
 
 Database hosted by Amazon RDS.
+
+
+## API spec
+
+The server exposes a GraphQL-based API.
+
+### Create user [mutation]
+
+```js
+mutation {
+    createUser(email: "romain@wye.com", pseudo: "Romain", password: "pass") {
+        user {
+            email,
+            pseudo
+        }
+    }
+}
+```
+
+### Log user in [mutation]
+
+```js
+mutation {
+    loginUser(email: "romain@wye.com", password: "pass") {
+        user {
+            email,
+            pseudo
+        }
+    }
+}
+```
