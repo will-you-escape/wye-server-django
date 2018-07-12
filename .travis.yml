@@ -10,6 +10,7 @@ before_script:
 - export SECRET_KEY=dummy_secret_key
 - export DATABASE_SERVER_URL=sqlite:///db.sqlite3
 - export PRODUCTION_SERVER_URL='localhost'
+- export CLIENT_HOST='client'
 script:
 # Moving into project folder to have the test runner properly detect all tests.
 - cd wye_server_django

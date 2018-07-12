@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/2.0/ref/settings/
 import environ
 import os
 
+from corsheaders.defaults import default_headers
+
+
 root = environ.Path(__file__) - 3 # three folder back (/a/b/c/ - 3 = /)
 env = environ.Env(
     DEBUG=(bool, False),
@@ -40,11 +43,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'graphene_django',
+    'corsheaders',
     'core',
     'account'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -99,6 +104,21 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Used by corsheaders app
+# Allows cors from specified servers
+CORS_ORIGIN_WHITELIST = (
+    env('CLIENT_HOST'),
+)
+
+# Set to True, so that cookies will be allowed to be included in cross-site HTTP requests.
+# As the client currently uses cookies for authentication, this settings is mandatory.
+CORS_ALLOW_CREDENTIALS = True
+
+# A new "credentials" header is sent by the Front-End through the Fetch API to allow
+# "third-party" cookies to be saved/sent on each request
+CORS_ALLOW_HEADERS = default_headers + (
+    'credentials',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
