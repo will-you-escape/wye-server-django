@@ -7,7 +7,16 @@ from django.test import TestCase
 from account.models import WYEUser
 
 
-class WYEUserCreation(TestCase):
+class AssertMixin(object):
+
+    def assertUserLoggedIn(self, user, response):
+        sessionid = response.cookies['sessionid'].value
+        session = Session.objects.get(session_key=sessionid)
+        session_user_id = int(session.get_decoded().get('_auth_user_id'))
+        self.assertEqual(user.id, session_user_id)
+
+
+class WYEUserCreation(AssertMixin, TestCase):
 
     def setUp(self):
         self.graph_url = '/graphql/'
@@ -30,8 +39,29 @@ class WYEUserCreation(TestCase):
         self.assertEqual(response.content, b'{"data":{"createUser":{"user":{"email":"romain@wye.com","pseudo":"Romain"}}}}')
         self.assertTrue(WYEUser.objects.filter(email="romain@wye.com", pseudo="Romain").exists())
 
+    def test_send_create_user_mutation_direct_logs_the_user_in(self):
+        mutation = '''
+            mutation {
+              createUser(email: "romain@wye.com", pseudo: "Romain", password: "pass") {
+                user {
+                  email,
+                  pseudo
+                }
+              }
+            }
+        '''
+        self.assertFalse(Session.objects.exists())
 
-class WYEUserLogin(TestCase):
+        response = self.client.post(self.graph_url, {'query': mutation})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'{"data":{"createUser":{"user":{"email":"romain@wye.com","pseudo":"Romain"}}}}')
+
+        created_user = WYEUser.objects.get(email="romain@wye.com", pseudo="Romain")
+        self.assertUserLoggedIn(created_user, response)
+
+
+class WYEUserLogin(AssertMixin, TestCase):
 
     def setUp(self):
         self.graph_url = '/graphql/'
@@ -60,7 +90,4 @@ class WYEUserLogin(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'{"data":{"loginUser":{"user":{"email":"romain@wye.com","pseudo":"Romain"}}}}')
 
-        sessionid = response.cookies['sessionid'].value
-        session = Session.objects.get(session_key=sessionid)
-        session_user_id = int(session.get_decoded().get('_auth_user_id'))
-        self.assertEqual(user.id, session_user_id)
+        self.assertUserLoggedIn(user, response)
