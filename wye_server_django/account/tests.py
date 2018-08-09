@@ -15,6 +15,10 @@ class AssertMixin(object):
         session_user_id = int(session.get_decoded().get('_auth_user_id'))
         self.assertEqual(user.id, session_user_id)
 
+    def assertUserLoggedOut(self, user, response):
+        sessionid = response.cookies['sessionid'].value
+        self.assertEqual(sessionid, '')
+
 
 class WYEUserCreation(AssertMixin, TestCase):
 
@@ -91,3 +95,60 @@ class WYEUserLogin(AssertMixin, TestCase):
         self.assertEqual(response.content, b'{"data":{"loginUser":{"user":{"email":"romain@wye.com","pseudo":"Romain"}}}}')
 
         self.assertUserLoggedIn(user, response)
+
+
+class WYEUserLogOut(AssertMixin, TestCase):
+
+    def setUp(self):
+        self.graph_url = '/graphql/'
+        self.private_graph_url = '/private_graphql/'
+
+    def test_send_logout_user_mutation_successfully_logs_out_a_user(self):
+        user = get_user_model().objects.create_user(
+            email="romain@wye.com",
+            pseudo="Romain",
+            password="pass")
+
+        mutation = '''
+            mutation {
+              loginUser(email: "romain@wye.com", password: "pass") {
+                user {
+                  email,
+                  pseudo
+                }
+              }
+            }
+        '''
+        response = self.client.post(self.graph_url, {'query': mutation})
+        self.assertUserLoggedIn(user, response)
+
+        mutation_logout = '''
+            mutation {
+              logoutUser {
+                user {
+                  email
+                }
+              }
+            }
+        '''
+
+        response = self.client.post(self.private_graph_url, {'query': mutation_logout})
+
+        self.assertEqual(response.content, b'{"data":{"logoutUser":null}}')
+        self.assertEqual(response.status_code, 200)
+        self.assertUserLoggedOut(user, response)
+
+    def test_cannot_log_out_if_user_is_anonymous(self):
+        mutation_logout = '''
+            mutation {
+              logoutUser {
+                user {
+                  email
+                }
+              }
+            }
+        '''
+
+        response = self.client.post(self.private_graph_url, {'query': mutation_logout})
+
+        self.assertEqual(response.status_code, 401)
