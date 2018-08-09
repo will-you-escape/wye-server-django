@@ -15,3 +15,4 @@ django-cors-headers = "*"
 python_version = "3.5"
 
 [dev-packages]
+ipdb = "*"
