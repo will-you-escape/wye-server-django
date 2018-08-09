@@ -96,6 +96,32 @@ class WYEUserLogin(AssertMixin, TestCase):
 
         self.assertUserLoggedIn(user, response)
 
+    def test_send_login_user_mutation_does_not_log_a_user_on_wrong_credentials(self):
+        user = get_user_model().objects.create_user(
+            email="romain@wye.com",
+            pseudo="Romain",
+            password="pass")
+
+        mutation = '''
+            mutation {
+              loginUser(email: "romain@wye.com", password: "wrong_password") {
+                user {
+                  email,
+                  pseudo
+                }
+              }
+            }
+        '''
+
+        self.assertFalse(Session.objects.exists())
+
+        response = self.client.post(self.graph_url, {'query': mutation})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'{"data":{"loginUser":{"user":null}}}')
+
+        self.assertFalse(Session.objects.exists())
+
 
 class WYEUserLogOut(AssertMixin, TestCase):
 
