@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import authenticate, login, logout, get_user_model
 
 import graphene
 from graphene_django import DjangoObjectType
@@ -44,6 +44,21 @@ class LoginUser(graphene.Mutation):
         return LoginUser(user=user)
 
 
+class LogOutUser(graphene.Mutation):
+    user = graphene.Field(UserType)
+
+    def mutate(self, info):
+        user = info.context.user
+        if user and user.is_authenticated:
+            logout(info.context)
+
+        return None
+
+
 class Mutation(graphene.ObjectType):
     create_user = CreateUser.Field()
     login_user = LoginUser.Field()
+
+
+class PrivateMutation(graphene.ObjectType):
+    logout_user = LogOutUser.Field()
