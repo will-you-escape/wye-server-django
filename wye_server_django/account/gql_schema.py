@@ -9,6 +9,13 @@ class UserType(DjangoObjectType):
         model = get_user_model()
 
 
+class Query(graphene.ObjectType):
+    whoami = graphene.String(name=graphene.String(default_value="stranger"))
+
+    def resolve_whoami(self, info, name):
+        return 'I am ' + info.context.user.email
+
+
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
 

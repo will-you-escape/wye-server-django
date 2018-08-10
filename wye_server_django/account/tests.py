@@ -178,3 +178,38 @@ class WYEUserLogOut(AssertMixin, TestCase):
         response = self.client.post(self.private_graph_url, {'query': mutation_logout})
 
         self.assertEqual(response.status_code, 401)
+
+
+class WYEWhoAmI(AssertMixin, TestCase):
+
+    def setUp(self):
+        self.private_graph_url = '/private_graphql/'
+
+    def test_returns_401_if_user_is_anonymous(self):
+        query = '''
+            {
+                whoami
+            }
+        '''
+
+        response = self.client.get(self.private_graph_url, {'query': query})
+
+        self.assertEqual(response.status_code, 401)
+
+    def test_returns_200_if_user_is_authenticated(self):
+        user = get_user_model().objects.create_user(
+            email="romain@wye.com",
+            pseudo="Romain",
+            password="pass")
+
+        query = '''
+            {
+                whoami
+            }
+        '''
+
+        self.client.login(email="romain@wye.com", password="pass")
+        response = self.client.get(self.private_graph_url, {'query': query})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b'{"data":{"whoami":"I am romain@wye.com"}}')
