@@ -11,6 +11,7 @@ before_script:
 - export DATABASE_SERVER_URL=sqlite:///db.sqlite3
 - export PRODUCTION_SERVER_URL='localhost'
 - export CLIENT_HOST='client'
+- export SESSION_AND_CSRF_COOKIE_DOMAIN='.wyedomain.com'
 script:
 # Moving into project folder to have the test runner properly detect all tests.
 - cd wye_server_django

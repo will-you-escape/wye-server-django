@@ -32,7 +32,6 @@ SECRET_KEY = env('SECRET_KEY')
 
 ALLOWED_HOSTS = ['localhost', env('PRODUCTION_SERVER_URL')]
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -103,6 +102,11 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Client and server won't be hosted on the same domain (different projects/tech),
+# hence we should allow cookies to be used by the client on a different subdomain.
+SESSION_COOKIE_DOMAIN = env('SESSION_AND_CSRF_COOKIE_DOMAIN')
+CSRF_COOKIE_DOMAIN = env('SESSION_AND_CSRF_COOKIE_DOMAIN')
 
 # Used by corsheaders app
 # Allows cors from specified servers
