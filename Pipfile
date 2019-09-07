@@ -12,7 +12,7 @@ django-environ = "*"
 django-cors-headers = "*"
 
 [requires]
-python_version = "3.5"
+python_version = "3.6.8"
 
 [dev-packages]
 ipdb = "*"
