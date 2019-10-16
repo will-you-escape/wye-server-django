@@ -13,7 +13,7 @@ class Query(graphene.ObjectType):
     whoami = graphene.String(name=graphene.String(default_value="stranger"))
 
     def resolve_whoami(self, info, name):
-        return 'I am ' + info.context.user.email
+        return "I am " + info.context.user.email
 
 
 class CreateUser(graphene.Mutation):
@@ -25,10 +25,7 @@ class CreateUser(graphene.Mutation):
         password = graphene.String(required=True)
 
     def mutate(self, info, email, pseudo, password):
-        user = get_user_model()(
-            email=email,
-            pseudo=pseudo
-        )
+        user = get_user_model()(email=email, pseudo=pseudo)
         user.set_password(password)
         user.save()
         login(info.context, user)
