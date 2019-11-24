@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "core",
     "account",
+    "rooms",
 ]
 
 MIDDLEWARE = [
@@ -103,7 +104,7 @@ CSRF_COOKIE_DOMAIN = env("SESSION_AND_CSRF_COOKIE_DOMAIN")
 # Used by corsheaders app
 # Allows cors from specified servers
 CORS_ORIGIN_WHITELIST = (env("CLIENT_HOST"),)
-print(CORS_ORIGIN_WHITELIST)
+
 # Set to True, so that cookies will be allowed to be included in cross-site HTTP requests.
 # As the client currently uses cookies for authentication, this settings is mandatory.
 CORS_ALLOW_CREDENTIALS = True
