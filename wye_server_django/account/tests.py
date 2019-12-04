@@ -7,19 +7,7 @@ from django.contrib.sessions.models import Session
 from django.test import TestCase
 
 from account.models import WYEUser
-from rooms.models import EscapeRoomSession
-
-
-class AssertMixin(object):
-    def assertUserLoggedIn(self, user, response):
-        sessionid = response.cookies["sessionid"].value
-        session = Session.objects.get(session_key=sessionid)
-        session_user_id = int(session.get_decoded().get("_auth_user_id"))
-        self.assertEqual(user.id, session_user_id)
-
-    def assertUserLoggedOut(self, user, response):
-        sessionid = response.cookies["sessionid"].value
-        self.assertEqual(sessionid, "")
+from core.test_helpers import AssertMixin
 
 
 class WYEUserCreation(AssertMixin, TestCase):
@@ -107,7 +95,7 @@ class WYEUserLogin(AssertMixin, TestCase):
         self.assertUserLoggedIn(user, response)
 
     def test_send_login_user_mutation_does_not_log_a_user_on_wrong_credentials(self):
-        user = get_user_model().objects.create_user(
+        get_user_model().objects.create_user(
             email="romain@wye.com", pseudo="Romain", password="pass"
         )
 
@@ -203,7 +191,7 @@ class WYEWhoAmI(AssertMixin, TestCase):
         self.assertEqual(response.status_code, 401)
 
     def test_returns_200_if_user_is_authenticated(self):
-        user = get_user_model().objects.create_user(
+        get_user_model().objects.create_user(
             email="romain@wye.com", pseudo="Romain", password="pass"
         )
 
@@ -218,116 +206,3 @@ class WYEWhoAmI(AssertMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b'{"data":{"whoami":"I am romain@wye.com"}}')
-
-
-class WYEEscapeRoomSessions(AssertMixin, TestCase):
-    def setUp(self):
-        self.private_graph_url = "/private_graphql/"
-        self.user = get_user_model().objects.create_user(
-            email="romain@wye.com", pseudo="Romain", password="pass"
-        )
-
-        self.client.login(email="romain@wye.com", password="pass")
-
-    def test_returns_nothing_if_no_escape_rooms(self):
-
-        query = """
-            {
-                roomSessions {
-                  name
-                  playedDatetime
-                  durationTime
-                  numberOfHints
-                }
-            }
-        """
-
-        response = self.client.get(self.private_graph_url, {"query": query})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'{"data":{"roomSessions":[]}}')
-
-    def test_returns_all_escape_rooms_for_a_given_user(self):
-        EscapeRoomSession.objects.create(
-            name="Escape Room Toulouse",
-            played_datetime=datetime.datetime(2001, 1, 1, 12, 0, 0, tzinfo=pytz.UTC),
-            duration_time=datetime.timedelta(minutes=50, seconds=00),
-            number_of_hints=2,
-            user=self.user,
-        )
-
-        query = """
-            {
-                roomSessions {
-                  name
-                  playedDatetime
-                  durationTime
-                  numberOfHints
-                }
-            }
-        """
-
-        response = self.client.get(self.private_graph_url, {"query": query})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content,
-            b'{"data":{"roomSessions":[{"name":"Escape Room Toulouse","playedDatetime":"2001-01-01T12:00:00+00:00","durationTime":3000.0,"numberOfHints":2}]}}',
-        )
-
-    def test_does_not_return_room_sessions_for_a_different_user(self):
-
-        new_user = get_user_model().objects.create_user(
-            email="new-user@wye.com", pseudo="NewUser", password="NewUser"
-        )
-        EscapeRoomSession.objects.create(
-            name="Escape Room Toulouse",
-            played_datetime=datetime.datetime(2001, 1, 1, 12, 0, 0, tzinfo=pytz.UTC),
-            duration_time=datetime.timedelta(minutes=50, seconds=00),
-            number_of_hints=2,
-            user=new_user,
-        )
-
-        query = """
-            {
-                roomSessions {
-                  name
-                  playedDatetime
-                  durationTime
-                  numberOfHints
-                }
-            }
-        """
-
-        response = self.client.get(self.private_graph_url, {"query": query})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b'{"data":{"roomSessions":[]}}')
-
-    def test_can_create_room_session(self):
-        mutation = """
-            mutation {
-              createRoomSession(name: "Escape room Youkidea", playedDatetime:"2012-11-23T13:32:00+00:00", durationTime:1200.0, numberOfHints:0) {
-                roomSession {
-                  name
-                }
-              }
-            }
-        """
-        self.assertFalse(EscapeRoomSession.objects.exists())
-
-        response = self.client.post(self.private_graph_url, {"query": mutation})
-
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(
-            EscapeRoomSession.objects.filter(
-                name="Escape room Youkidea",
-                played_datetime=datetime.datetime(
-                    2012, 11, 23, 13, 32, tzinfo=pytz.UTC
-                ),
-                duration_time=datetime.timedelta(seconds=1200),
-                number_of_hints=0,
-                user=self.user,
-            ).exists()
-        )
-
