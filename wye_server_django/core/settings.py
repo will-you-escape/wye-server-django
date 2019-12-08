@@ -134,9 +134,6 @@ STATIC_URL = "/static/"
 
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
-# Extra places for collectstatic to find static files.
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
-
 # Using custom User model for authentication
 AUTH_USER_MODEL = "account.WYEUser"
 
