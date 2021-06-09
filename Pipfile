@@ -5,7 +5,7 @@ verify_ssl = true
 
 [packages]
 graphene-django = "*"
-Django = "==2.2.8"
+Django = "==2.2.22"
 gunicorn = "*"
 django-environ = "*"
 "psycopg2" = "*"
